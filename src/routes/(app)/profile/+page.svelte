@@ -1,12 +1,16 @@
 <script lang="ts">
   import Error from "@/lib/Error.svelte";
   import Spinner from "@/lib/Spinner.svelte";
+  import { logList } from "@/lib/util/api";
   import { getOrdinalSuffix, monthsShort, toggleTheme } from "@/lib/util/helpers";
   import { appTheme } from "@/store";
   import type { Profile } from "@/types";
   import axios from "axios";
 
   $: selectedTheme = $appTheme;
+
+  let downloadUrl: string;
+  let format: string;
 
   async function getProfile() {
     return (await axios.get(`/profile`)).data as Profile;
@@ -17,6 +21,17 @@
       monthsShort[d.getMonth()]
     } ${d.getFullYear()}`;
   }
+
+  
+  async function createDownloadLink() {
+    // format = "json"; // Change to "csv" if you want to download as CSV
+    // const response = await axios.get(`/profile/export?format=${format}`, { responseType: 'blob' });
+    const response = logList();
+    const data = JSON.stringify(response);
+    console.log(data)
+    const blob = new Blob([data], { type: 'application/json' });
+    downloadUrl = window.URL.createObjectURL(blob);
+}
 </script>
 
 <div class="content">
@@ -64,6 +79,28 @@
           dark
         </button>
       </div>
+
+      <!-- <a 
+        href={downloadUrl} 
+        download={downloadUrl 
+          ? (format === 'json' 
+            ? 'watchedData.json' 
+            : 'watchedData.csv') 
+          : '#'} 
+        on:click|preventDefault={downloadWatchedData}
+      >
+      <button>
+        Download Watched Data
+      </button>
+      </a>  -->
+      <button on:click={createDownloadLink}>Prepare Download</button>
+
+      <!-- This will only appear once the data is ready for download -->
+      {#if downloadUrl}
+        <a href={downloadUrl} download="data.txt">
+          Download Data
+        </a>
+      {/if}
     </div>
   </div>
 </div>

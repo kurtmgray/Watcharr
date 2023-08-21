@@ -89,6 +89,12 @@ export function updateWatched(
     });
 }
 
+export function logList() {
+  const wList = get(watchedList);
+  console.log("Watched List:", wList);
+  return wList;
+}
+
 /**
  * Delete an item from watched list.
  * @param id Watched Entry ID

@@ -358,21 +358,6 @@ func (b *BaseRouter) addAuthRoutes() {
 	})
 }
 
-func (b *BaseRouter) addProfileRoutes() {
-	profile := b.rg.Group("/profile").Use(AuthRequired(nil))
-
-	// Get user profile details
-	profile.GET("", func(c *gin.Context) {
-		userId := c.MustGet("userId").(uint)
-		response, err := getProfile(b.db, userId)
-		if err != nil {
-			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, response)
-	})
-}
-
 func (b *BaseRouter) addJellyfinRoutes() {
 	jf := b.rg.Group("/jellyfin").Use(AuthRequired(b.db))
 
@@ -389,5 +374,36 @@ func (b *BaseRouter) addJellyfinRoutes() {
 			return
 		}
 		c.JSON(http.StatusOK, response)
+	})
+}
+
+func (b *BaseRouter) addProfileRoutes() {
+	profile := b.rg.Group("/profile").Use(AuthRequired(nil))
+
+	// Get user profile details
+	profile.GET("", func(c *gin.Context) {
+		userId := c.MustGet("userId").(uint)
+		response, err := getProfile(b.db, userId)
+		if err != nil {
+			c.JSON(http.StatusForbidden, ErrorResponse{Error: err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, response)
+	})
+
+    // Export watched list as JSON
+	profile.GET("/export", func(c *gin.Context) {
+		userId := c.MustGet("userId").(uint)
+		data, err := exportWatchedData(b.db, userId, c)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, ErrorResponse{Error: err.Error()})
+			return
+		}
+		// format := c.DefaultQuery("format", "json")
+		// if format == "csv" {
+		// 	c.String(http.StatusOK, data.(string))
+		// } else {
+			c.JSON(http.StatusOK, data)
+		// }	
 	})
 }
