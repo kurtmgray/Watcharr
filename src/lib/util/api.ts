@@ -7,11 +7,15 @@ import {
   type WatchedAddRequest,
   type WatchedStatus,
   type WatchedUpdateRequest,
-  type WatchedUpdateResponse
+  type WatchedUpdateResponse,
+  type DownloadFormat
 } from "@/types";
 import axios from "axios";
 import { get } from "svelte/store";
 import { notify } from "./notify";
+import { Parser } from '@json2csv/plainjs';
+import { XMLBuilder } from 'fast-xml-parser';
+
 const { MODE } = import.meta.env;
 
 export const baseURL = MODE === "development" ? "http://127.0.0.1:3080/api" : "/api";
@@ -89,12 +93,6 @@ export function updateWatched(
     });
 }
 
-export function logList() {
-  const wList = get(watchedList);
-  console.log("Watched List:", wList);
-  return wList;
-}
-
 /**
  * Delete an item from watched list.
  * @param id Watched Entry ID
@@ -143,3 +141,41 @@ export async function contentExistsOnJellyfin(
 export const noAuthAxios = axios.create({
   baseURL: baseURL
 });
+
+export function createExportUrl(format: DownloadFormat): string | undefined {
+  let downloadUrl: string;
+  const wList = get(watchedList);
+
+  switch (format) {
+    case 'json':
+      downloadUrl = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(wList));
+      break;
+    case 'csv':
+      try {
+        const parser = new Parser();
+        const csv = parser.parse(wList);
+        downloadUrl = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      } catch (error) {
+        console.error(error);
+        notify({ text: "Failed To Export!", type: "error" });
+        return;
+      }
+      break;
+    case 'xml':
+      try {
+        const builder = new XMLBuilder();
+        const xml =  builder.build(wList);
+        downloadUrl = 'data:text/xml;charset=utf-8,' + encodeURIComponent(xml);
+      } catch (error) {
+        console.error(error);
+        notify({ text: "Failed To Export XML!", type: "error" });
+        return;
+      }
+      break;
+    default:
+      console.error(`Invalid format: ${format}`);
+      return;
+  }
+
+  return downloadUrl;
+}
