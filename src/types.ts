@@ -39,6 +39,8 @@ export interface Content {
   poster_path: string;
   overview: string;
   type: ContentType;
+  release_date: string;
+  first_air_date: string;
 }
 
 export interface Activity extends dbModel {
