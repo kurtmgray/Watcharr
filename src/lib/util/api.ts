@@ -148,7 +148,7 @@ export function createExportUrl(format: DownloadFormat): string | undefined {
 
   switch (format) {
     case 'json':
-      downloadUrl = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(wList));
+      downloadUrl = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(wList, null, 2));
       break;
     case 'csv':
       try {

@@ -22,19 +22,6 @@
     } ${d.getFullYear()}`;
   }
 
-  function getFileExtension(format: DownloadFormat) {
-  switch (format) {
-    case 'json':
-      return 'txt';
-    case 'xml':
-      return 'xml';
-    case 'csv':
-      return 'csv';
-    default:
-      return 'txt';
-  }
-}
-
   async function createDownloadLink(e: MouseEvent) {
     const button = e.target as HTMLButtonElement;
     format = button.dataset.format as DownloadFormat;
@@ -95,7 +82,7 @@
       <button data-format="xml" on:click={createDownloadLink}>Export XML</button>
       
       {#if downloadUrl}
-        <a href={downloadUrl} download={`data.${getFileExtension(format)}`}>
+        <a href={downloadUrl} download={`data.${format}`}>
           <button on:click={() => {downloadUrl = undefined}}>
             Download {format.toUpperCase()}
           </button>
